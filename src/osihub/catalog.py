@@ -9,8 +9,16 @@ LINK_RE = re.compile(r"!?\[[^\]]*\]\((https?://[^\s)]+)(?:\s+[^)]*)?\)", re.I)
 BARE_URL_RE = re.compile(r"https?://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", re.I)
 
 def load_sources(path: str | Path | None = None) -> list[dict]:
-    path = Path(path) if path else Path(__file__).resolve().parents[2] / "config" / "sources.json"
-    return json.loads(path.read_text(encoding="utf-8"))
+    if path is not None:
+        source_path = Path(path)
+    else:
+        project_file = Path(__file__).resolve().parents[2] / "config" / "sources.json"
+        packaged_file = Path(__file__).resolve().parent / "sources.json"
+        source_path = project_file if project_file.exists() else packaged_file
+    data = json.loads(source_path.read_text(encoding="utf-8"))
+    if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
+        raise ValueError("Source configuration must be a JSON array of objects")
+    return data
 
 def extract_links(markdown: str) -> list[str]:
     found = LINK_RE.findall(markdown) + BARE_URL_RE.findall(markdown)
@@ -37,4 +45,7 @@ def github_slug(url: str) -> str | None:
     parts = [p for p in parsed.path.strip("/").split("/") if p]
     if len(parts) < 2 or parts[0] in {"topics", "collections", "marketplace", "orgs", "features"}:
         return None
-    return f"{parts[0]}/{parts[1].removesuffix('.git')}"
+    owner, repo = parts[0], parts[1].removesuffix(".git")
+    if not owner or not repo:
+        return None
+    return f"{owner}/{repo}"
