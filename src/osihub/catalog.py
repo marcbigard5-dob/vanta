@@ -6,7 +6,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 LINK_RE = re.compile(r"!?\[[^\]]*\]\((https?://[^\s)]+)(?:\s+[^)]*)?\)", re.I)
-BARE_URL_RE = re.compile(r"https?://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", re.I)
+# Capture bare HTTP(S) links too, not only GitHub links. Markdown links are
+# also found by LINK_RE; the final de-duplication keeps each URL once.
+BARE_URL_RE = re.compile(r"https?://[^\s<>\"'()]+", re.I)
 
 def load_sources(path: str | Path | None = None) -> list[dict]:
     if path is not None:
@@ -24,7 +26,7 @@ def extract_links(markdown: str) -> list[str]:
     found = LINK_RE.findall(markdown) + BARE_URL_RE.findall(markdown)
     result, seen = [], set()
     for raw in found:
-        url = raw.rstrip(".,;")
+        url = raw.rstrip(".,;:!?")
         if url not in seen:
             seen.add(url)
             result.append(url)
