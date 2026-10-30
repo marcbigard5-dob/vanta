@@ -12,8 +12,11 @@ def fetch_text(url: str, timeout: int = 25) -> str:
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="replace")
 
-def sync(store: Store, client: GitHubClient, sources_path=None) -> tuple[int, list[str]]:
-    added, errors = 0, []
+def sync(store: Store, client: GitHubClient, sources_path=None, metadata_limit: int = 100) -> tuple[int, list[str]]:
+    """Index catalogue links; enrich at most metadata_limit GitHub repos per run."""
+    if metadata_limit < 0:
+        raise ValueError("metadata_limit must be zero or greater")
+    added, errors, enriched = 0, [], 0
     for source in load_sources(sources_path):
         markdown = None
         for branch in ("main", "master"):
@@ -23,16 +26,18 @@ def sync(store: Store, client: GitHubClient, sources_path=None) -> tuple[int, li
             except Exception:
                 continue
         if markdown is None:
-            errors.append(f"{source['name']}: README could not be fetched")
+            errors.append(f"{source['name']}: README could not be fetched from main or master")
             continue
         for link in extract_links(markdown):
             slug = github_slug(link)
             meta = {}
-            if slug:
+            if slug and enriched < metadata_limit:
                 try:
                     meta = client.repository(slug)
+                    enriched += 1
                 except Exception as exc:
                     errors.append(f"{slug}: {exc}")
+                    enriched += 1
             store.upsert({"url":link,"source":source["name"],"kind":"repository" if slug else classify_url(link),
                 "slug":slug,"title":slug or link,"description":meta.get("description",""),
                 "stars":meta.get("stars"),"language":meta.get("language",""),"license":meta.get("license",""),
