@@ -10,14 +10,14 @@ from .agent.capabilities import CapabilityError, CapabilityRegistry
 from .agent.policy import ApprovalError, ApprovalLedger
 from .agent.model_router import ModelRouter
 from .agent.providers import OllamaProvider
-from .agent.runtime import AgentRuntime
+from .agent.runtime import AgentRuntime\nfrom .agent.coordinator import MultiAgentCoordinator, CoordinationError
 
 store = TaskStore()
 model_router = ModelRouter.from_env()
 agent = Orchestrator(store, OllamaProvider(router=model_router))
 capabilities = CapabilityRegistry(store.path)
 approvals = ApprovalLedger(store.path)
-runtime = AgentRuntime(capabilities)
+runtime = AgentRuntime(capabilities)\ncoordinator = MultiAgentCoordinator(store, model_router)
 app = FastAPI(title="OMNIA Agent API", version="0.3.0",
               description="Supervised planning and default-deny capability registry. Tool execution is disabled.")
 
