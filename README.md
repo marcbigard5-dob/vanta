@@ -38,6 +38,8 @@ This repository currently contains the initial Open Source Intelligence Hub cata
 
 - [OMNIA architecture](docs/OMNIA_ARCHITECTURE.md)
 - [Implementation roadmap](docs/OMNIA_ROADMAP.md)
+- [Master technical specification](docs/OMNIA_MASTER_SPEC.md)
+- [Upstream integration audit](docs/OMNIA_UPSTREAM_AUDIT.md)
 
 ## Existing catalogue prototype
 
