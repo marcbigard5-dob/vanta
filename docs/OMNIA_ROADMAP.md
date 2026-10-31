@@ -3,7 +3,7 @@
 ## Milestone 0 — Direction and architecture
 - [x] Confirm responsive web, supervised autonomy, hybrid models and broad task scope.
 - [x] Define trust boundaries and upstream project roles.
-- [x] Define the master technical specification and integration boundaries.\n- [ ] Review upstream licences and integration compatibility individually.
+- [x] Define the master technical specification and integration boundaries.\n- [x] Perform repository-level upstream licence and integration compatibility audit (see `OMNIA_UPSTREAM_AUDIT.md`).\n- [ ] Pin exact commits/releases and run full dependency, licence and runtime compatibility scans before enabling integrations.
 
 ## Milestone 1 — Working agent foundation
 - [ ] FastAPI application with health and version endpoints.
