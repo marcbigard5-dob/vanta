@@ -12,6 +12,7 @@ from .agent.model_router import ModelRouter
 from .agent.providers import OllamaProvider
 from .agent.runtime import AgentRuntime
 from .agent.coordinator import MultiAgentCoordinator, CoordinationError
+from .agent.engine import ExecutionEngine, ExecutionError
 
 store = TaskStore()
 model_router = ModelRouter.from_env()
@@ -20,6 +21,7 @@ capabilities = CapabilityRegistry(store.path)
 approvals = ApprovalLedger(store.path)
 runtime = AgentRuntime(capabilities)
 coordinator = MultiAgentCoordinator(store, model_router)
+execution_engine = ExecutionEngine(capabilities, approvals, runtime, store.path)
 app = FastAPI(title="OMNIA Agent API", version="0.3.0",
               description="Supervised planning and default-deny capability registry. Tool execution is disabled.")
 
@@ -51,6 +53,13 @@ class ApprovalRequest(BaseModel):
     permissions: list[str]
     capability_version: str
     risk: str
+
+
+class ExecutionRequest(BaseModel):
+    capability_id: str
+    arguments: dict
+    target: str = "local"
+    approval_id: str | None = None
 
 
 class ApprovalDecision(BaseModel):
@@ -166,6 +175,28 @@ def disable_capability(capability_id: str):
     item = capabilities.set_enabled(capability_id, False)
     if item is None:
         raise HTTPException(status_code=404, detail="Capability not found")
+    return item
+
+
+
+@app.post("/api/executions", status_code=201)
+def execute_capability(body: ExecutionRequest):
+    try:
+        return execution_engine.execute(body.capability_id, body.arguments,
+                                        target=body.target, approval_id=body.approval_id)
+    except ExecutionError as exc:
+        message = str(exc)
+        status = 404 if message == "Unknown capability" else 409
+        if "No trusted in-process handler" in message:
+            status = 503
+        raise HTTPException(status_code=status, detail=message) from exc
+
+
+@app.get("/api/executions/{execution_id}")
+def get_execution(execution_id: str):
+    item = execution_engine.get_execution(execution_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Execution not found")
     return item
 
 
