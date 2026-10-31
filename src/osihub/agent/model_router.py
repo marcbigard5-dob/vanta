@@ -62,7 +62,7 @@ class OllamaModelProvider:
         try:
             value = payload
             for part in field.split("."):
-                value = int(part) if part.isdigit() else value[part]
+                value = value[int(part)] if part.isdigit() else value[part]
             if not isinstance(value, str) or not value.strip():
                 raise ValueError("empty model response")
             return value
