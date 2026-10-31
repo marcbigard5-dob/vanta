@@ -42,3 +42,34 @@ This repository currently contains the initial Open Source Intelligence Hub cata
 ## Existing catalogue prototype
 
 The existing Python prototype can index configured public catalogues into a local SQLite database. See the earlier CLI and source configuration for its current commands. Its catalogue capability is intended to become one subsystem of OMNIA, not the product's final purpose.
+
+
+## OMNIA API — first working foundation
+
+The first backend milestone adds a task API and an Ollama-backed planning adapter. It creates and persists task records, asks a configured local Ollama model to produce a bounded plan, classifies plan-step risk, and requires approval when a plan contains medium/high-risk steps.
+
+This is **planning only**: arbitrary tool execution, browser control, code execution and the web UI are not enabled yet.
+
+### Run locally
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -e .
+# Start Ollama separately and pull a model, for example:
+ollama pull llama3.2
+omnia-api
+```
+
+The API listens on `http://127.0.0.1:8000` by default. Set `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OMNIA_DB`, `OMNIA_HOST` or `OMNIA_PORT` to configure it.
+
+### Initial endpoints
+
+- `GET /health`
+- `POST /api/tasks` with JSON `{"prompt":"..." }`
+- `GET /api/tasks`
+- `GET /api/tasks/{task_id}`
+- `POST /api/tasks/{task_id}/plan`
+- `POST /api/tasks/{task_id}/approve`
+
+Interactive API documentation is available at `/docs` when the server is running. A task plan does not mean its steps have been executed.
