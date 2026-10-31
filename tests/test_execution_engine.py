@@ -62,6 +62,9 @@ class ExecutionEngineTests(unittest.TestCase):
                                      approval_id=request["approval_id"])
         self.assertEqual(result["status"], "completed")
         with self.assertRaises(ExecutionError):
+            self.engine.execute("local.medium", {"text": "approved?"},
+                                approval_id=request["approval_id"])
+        with self.assertRaises(ExecutionError):
             self.engine.execute("local.medium", {"text": "different"},
                                 approval_id=request["approval_id"])
 
