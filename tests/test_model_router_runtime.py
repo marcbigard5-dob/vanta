@@ -31,7 +31,8 @@ class ModelRouterRuntimeTests(unittest.TestCase):
         self.assertEqual(router.generate([])[0], "local")
 
     def test_unknown_route_fails_without_silent_fallback(self):
-        router = ModelRouter({"local": FakeProvider()}, routes={"research": "missing"})
+        router = ModelRouter({"local": FakeProvider()}, default="local",
+                             routes={"research": "missing"})
         with self.assertRaises(ModelError):
             router.generate([], task_class="research")
 
