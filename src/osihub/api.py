@@ -10,14 +10,16 @@ from .agent.capabilities import CapabilityError, CapabilityRegistry
 from .agent.policy import ApprovalError, ApprovalLedger
 from .agent.model_router import ModelRouter
 from .agent.providers import OllamaProvider
-from .agent.runtime import AgentRuntime\nfrom .agent.coordinator import MultiAgentCoordinator, CoordinationError
+from .agent.runtime import AgentRuntime
+from .agent.coordinator import MultiAgentCoordinator, CoordinationError
 
 store = TaskStore()
 model_router = ModelRouter.from_env()
 agent = Orchestrator(store, OllamaProvider(router=model_router))
 capabilities = CapabilityRegistry(store.path)
 approvals = ApprovalLedger(store.path)
-runtime = AgentRuntime(capabilities)\ncoordinator = MultiAgentCoordinator(store, model_router)
+runtime = AgentRuntime(capabilities)
+coordinator = MultiAgentCoordinator(store, model_router)
 app = FastAPI(title="OMNIA Agent API", version="0.3.0",
               description="Supervised planning and default-deny capability registry. Tool execution is disabled.")
 
@@ -106,6 +108,25 @@ def approve_task(task_id: str):
     if task["status"] != "awaiting_approval" or not task["approval_required"]:
         raise HTTPException(status_code=409, detail="Task is not awaiting approval")
     return store.approve(task_id)
+
+
+
+@app.post("/api/tasks/{task_id}/run")
+def run_multi_agent_task(task_id: str):
+    try:
+        return coordinator.start(task_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Task not found") from exc
+    except CoordinationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.get("/api/agent-runs/{run_id}")
+def get_agent_run(run_id: str):
+    try:
+        return coordinator.get_run(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Agent run not found") from exc
 
 
 @app.get("/api/models")
