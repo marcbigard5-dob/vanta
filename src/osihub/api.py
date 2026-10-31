@@ -23,7 +23,7 @@ runtime = AgentRuntime(capabilities)
 coordinator = MultiAgentCoordinator(store, model_router)
 execution_engine = ExecutionEngine(capabilities, approvals, runtime, store.path)
 app = FastAPI(title="OMNIA Agent API", version="0.3.0",
-              description="Supervised planning and default-deny capability registry. Tool execution is disabled.")
+              description="Supervised multi-agent planning and policy-enforced capability execution.")
 
 
 class TaskRequest(BaseModel):
@@ -69,9 +69,9 @@ class ApprovalDecision(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "omnia-api", "execution_enabled": False,
-            "capability_registry": True, "model_providers": model_router.inventory(),
-            "execution_enabled": False}
+    return {"status": "ok", "service": "omnia-api", "execution_engine": True,
+            "registered_handlers": len(runtime._handlers),
+            "capability_registry": True, "model_providers": model_router.inventory()}
 
 
 @app.post("/api/tasks", status_code=201)
@@ -148,7 +148,8 @@ def list_models():
 def list_capabilities(limit: int = 100):
     if not 1 <= limit <= 500:
         raise HTTPException(status_code=422, detail="limit must be between 1 and 500")
-    return {"capabilities": capabilities.list(limit), "execution_enabled": False}
+    return {"capabilities": capabilities.list(limit),
+            "registered_handlers": sorted(runtime._handlers.keys())}
 
 
 @app.post("/api/capabilities", status_code=201)
