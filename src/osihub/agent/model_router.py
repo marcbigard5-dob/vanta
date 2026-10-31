@@ -41,6 +41,34 @@ class OllamaModelProvider:
             body["format"] = "json"
         return self._post("/api/chat", body, None, "message.content")
 
+    def _request(self, url: str, body: dict | None) -> dict:
+        data = json.dumps(body).encode() if body is not None else None
+        request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=self.config.timeout) as response:
+                result = json.loads(response.read().decode("utf-8"))
+            if not isinstance(result, dict):
+                raise ModelError("Ollama returned a non-object response")
+            return result
+        except urllib.error.HTTPError as exc:
+            raise ModelError(f"Ollama HTTP error {exc.code}") from exc
+        except urllib.error.URLError as exc:
+            raise ModelError("Ollama is unreachable") from exc
+        except json.JSONDecodeError as exc:
+            raise ModelError("Ollama returned invalid JSON") from exc
+
+    def _post(self, path: str, body: dict, key: str | None, field: str) -> str:
+        payload = self._request(self.config.base_url.rstrip("/") + path, body)
+        try:
+            value = payload
+            for part in field.split("."):
+                value = int(part) if part.isdigit() else value[part]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError("empty model response")
+            return value
+        except (KeyError, IndexError, TypeError, ValueError) as exc:
+            raise ModelError("Ollama returned an invalid response shape") from exc
+
     def list_models(self) -> list[str]:
         payload = self._request(self.config.base_url.rstrip("/") + "/api/tags", None)
         return sorted({m.get("name", "") for m in payload.get("models", []) if m.get("name")})
