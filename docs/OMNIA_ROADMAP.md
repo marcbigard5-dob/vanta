@@ -3,7 +3,7 @@
 ## Milestone 0 — Direction and architecture
 - [x] Confirm responsive web, supervised autonomy, hybrid models and broad task scope.
 - [x] Define trust boundaries and upstream project roles.
-- [ ] Review upstream licences and integration compatibility individually.
+- [x] Define the master technical specification and integration boundaries.\n- [ ] Review upstream licences and integration compatibility individually.
 
 ## Milestone 1 — Working agent foundation
 - [ ] FastAPI application with health and version endpoints.
