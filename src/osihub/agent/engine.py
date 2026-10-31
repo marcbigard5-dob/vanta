@@ -88,6 +88,10 @@ class ExecutionEngine:
                 result_json TEXT NOT NULL DEFAULT '{}', error TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL, finished_at TEXT NOT NULL DEFAULT ''
             )""")
+            db.execute("""CREATE TABLE IF NOT EXISTS approval_consumptions (
+                approval_id TEXT PRIMARY KEY, execution_id TEXT NOT NULL UNIQUE,
+                consumed_at TEXT NOT NULL
+            )""")
 
     def _connect(self):
         db = sqlite3.connect(self.db_path)
@@ -118,11 +122,19 @@ class ExecutionEngine:
             action = approval["action"]
             if (action["capability_id"] != capability_id or action["target"] != target
                 or action["capability_version"] != manifest["source_version"]
-                or sorted(action["permissions"]) != sorted(manifest["permissions"])):
+                or sorted(action["permissions"]) != sorted(manifest["permissions"])
+                or action["risk"] != manifest["risk"]):
                 raise ExecutionError("Approval scope or capability version has changed")
             approval_status = "approved"
         execution_id, now = str(uuid.uuid4()), datetime.now(timezone.utc).isoformat()
         with self._connect() as db:
+            if approval_id:
+                try:
+                    db.execute("""INSERT INTO approval_consumptions
+                        (approval_id,execution_id,consumed_at) VALUES(?,?,?)""",
+                        (approval_id, execution_id, now))
+                except sqlite3.IntegrityError as exc:
+                    raise ExecutionError("Approval has already been consumed") from exc
             db.execute("""INSERT INTO execution_records
                 (execution_id,capability_id,action_digest,status,created_at)
                 VALUES(?,?,?,?,?)""", (execution_id, capability_id, digest, "running", now))
