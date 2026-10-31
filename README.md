@@ -1,43 +1,44 @@
-# OpenSource Intelligence Hub
+# OMNIA — Autonomous AI Workspace
 
-A local-first discovery and evaluation hub for open-source tools, APIs, LLM apps and MCP servers.
+OMNIA is the planned evolution of this repository into a supervised, tool-using AI workspace. The goal is simple: describe a task in natural language, let OMNIA plan and execute it using selected models and tools, verify the result, and return useful artifacts.
 
-> This project indexes upstream catalogues; it does not copy their contents or claim that every listed project is safe, maintained, or Android-compatible.
+## Product direction
 
-## Initial sources
-- [Public APIs](https://github.com/public-apis/public-apis) — API directory
-- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) — MCP server directory
-- [Awesome LLM Apps](https://github.com/Shubhamsaboo/awesome-llm-apps) — LLM application examples
-- [Awesome](https://github.com/sindresorhus/awesome) — curated list directory
-- [Scrapling](https://github.com/D4Vinci/Scrapling) — optional scraping framework (a library, not a catalogue)
+- Responsive web interface for phones and computers.
+- High autonomy with approval gates for sensitive actions.
+- Hybrid AI: local models through Ollama and optional external model APIs.
+- Broad capabilities: software engineering, research, design, data analysis and automation.
+- Local-first data handling, explicit tool permissions and auditable execution.
 
-## First milestone
-- Fetch README files from configured public GitHub repositories.
-- Extract Markdown links and classify repository / API / resource links.
-- Enrich GitHub repository links with metadata using the public GitHub REST API.
-- Store results in a local SQLite database.
-- Search and list cached entries offline.
-- No account or token required for public repositories. Set `GITHUB_TOKEN` to raise API limits.
+## How the listed projects fit
 
-## Requirements
-Python 3.10+. On Android, use Termux and install Python with `pkg install python`. Core features use only the standard library.
+- **Ollama:** local model runtime.
+- **Langflow:** optional visual workflow authoring and interoperability.
+- **OpenHands:** isolated software-engineering execution adapter.
+- **Awesome MCP Servers:** discovery catalogue for candidate tool integrations.
+- **Public APIs:** discovery catalogue for service integrations.
+- **Scrapling:** optional web extraction component.
+- **Open Design:** design workflow reference and possible adapter.
+- **Awesome LLM Apps** and **Awesome:** research and reference catalogues.
+- **Free-for-dev:** discovery catalogue for services with free tiers.
 
-## Quick start
-```bash
-python -m venv .venv
-. .venv/bin/activate
-pip install -e .
-osihub sources
-osihub sync
-osihub search "mcp"
-```
+These projects are not all embedded as dependencies. Some are catalogues, some are runtimes, and some are reference implementations. Every executable integration must be reviewed, licensed appropriately, configured and explicitly enabled.
 
-## Commands
-- `osihub sources` — show configured sources
-- `osihub sync` — fetch and index catalogues
-- `osihub list --kind repository` — list cached entries
-- `osihub search <query>` — search local cache
-- `osihub info <owner/repo>` — inspect cached metadata
+## Important limitations
 
-## Safety and scope
-The first version never executes downloaded code. Scrapling and MCP execution are not enabled by default. Android compatibility is not assumed; it must be tested per project. Respect upstream licences, terms, rate limits and robots policies.
+OMNIA does not promise an unlimited free hosted API. Local inference through Ollama avoids per-call API charges but depends on available hardware, memory and speed. External free tiers may have quotas and changing terms.
+
+Discovered tools are not automatically trusted or executed. Untrusted code must run in an isolated, resource-limited environment. Purchases, publishing, deletion, account changes and other consequential external actions require user approval.
+
+## Current repository status
+
+This repository currently contains the initial Open Source Intelligence Hub catalogue-indexing foundation. It is **not yet** a working autonomous agent platform. The OMNIA architecture and staged roadmap define the intended transition; implementation and verification will happen milestone by milestone.
+
+## Documentation
+
+- [OMNIA architecture](docs/OMNIA_ARCHITECTURE.md)
+- [Implementation roadmap](docs/OMNIA_ROADMAP.md)
+
+## Existing catalogue prototype
+
+The existing Python prototype can index configured public catalogues into a local SQLite database. See the earlier CLI and source configuration for its current commands. Its catalogue capability is intended to become one subsystem of OMNIA, not the product's final purpose.
