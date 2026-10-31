@@ -8,11 +8,16 @@ from .agent.providers import ProviderError
 from .agent.store import TaskStore
 from .agent.capabilities import CapabilityError, CapabilityRegistry
 from .agent.policy import ApprovalError, ApprovalLedger
+from .agent.model_router import ModelRouter
+from .agent.providers import OllamaProvider
+from .agent.runtime import AgentRuntime
 
 store = TaskStore()
-agent = Orchestrator(store)
+model_router = ModelRouter.from_env()
+agent = Orchestrator(store, OllamaProvider(router=model_router))
 capabilities = CapabilityRegistry(store.path)
 approvals = ApprovalLedger(store.path)
+runtime = AgentRuntime(capabilities)
 app = FastAPI(title="OMNIA Agent API", version="0.3.0",
               description="Supervised planning and default-deny capability registry. Tool execution is disabled.")
 
@@ -54,8 +59,8 @@ class ApprovalDecision(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "omnia-api", "execution_enabled": False,
-            "capability_registry": True, "model_provider": "ollama",
-            "model": os.getenv("OLLAMA_MODEL", "llama3.2")}
+            "capability_registry": True, "model_providers": model_router.inventory(),
+            "execution_enabled": False}
 
 
 @app.post("/api/tasks", status_code=201)
@@ -101,6 +106,12 @@ def approve_task(task_id: str):
     if task["status"] != "awaiting_approval" or not task["approval_required"]:
         raise HTTPException(status_code=409, detail="Task is not awaiting approval")
     return store.approve(task_id)
+
+
+@app.get("/api/models")
+def list_models():
+    return {"providers": model_router.inventory(), "routing": "explicit-task-class",
+            "default_provider": model_router.default}
 
 
 @app.get("/api/capabilities")
