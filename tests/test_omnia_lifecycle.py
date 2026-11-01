@@ -32,7 +32,7 @@ class ReasoningProvider:
     def generate(self, messages, *, task_class="general", json_mode=False):
         self.calls.append(task_class)
         return ('{"findings":"bounded test result","limitations":["not independently verified"],'
-                '"next_dependencies":[]}'), "test-local"
+                '"next_dependencies":[]}')
 
 
 class OmniLifecycleTests(unittest.TestCase):
