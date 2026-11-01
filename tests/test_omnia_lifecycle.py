@@ -24,6 +24,8 @@ class PlanningProvider:
 
 
 class ReasoningProvider:
+    name = "test-local"
+
     def __init__(self):
         self.calls = []
 
