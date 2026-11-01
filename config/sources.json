@@ -1,0 +1,7 @@
+[
+  {"name":"Public APIs","owner":"public-apis","repo":"public-apis","kind":"api_catalog","readme":"README.md"},
+  {"name":"Awesome MCP Servers","owner":"punkpeye","repo":"awesome-mcp-servers","kind":"mcp_catalog","readme":"README.md"},
+  {"name":"Awesome LLM Apps","owner":"Shubhamsaboo","repo":"awesome-llm-apps","kind":"llm_catalog","readme":"README.md"},
+  {"name":"Awesome","owner":"sindresorhus","repo":"awesome","kind":"awesome_index","readme":"readme.md"},
+  {"name":"Scrapling","owner":"D4Vinci","repo":"Scrapling","kind":"tool_project","readme":"README.md"}
+]

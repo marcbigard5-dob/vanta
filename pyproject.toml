@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnia-agent-workspace"
+version = "0.2.0"
+description = "OMNIA supervised autonomous AI workspace"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "fastapi>=0.110,<1",
+  "uvicorn[standard]>=0.27,<1",
+  "pydantic>=2.6,<3"
+]
+
+[project.optional-dependencies]
+test = ["httpx>=0.27,<1"]
+
+[project.scripts]
+osihub = "osihub.cli:main"
+omnia-api = "osihub.api:run"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+osihub = ["sources.json"]
